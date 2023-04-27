@@ -1,4 +1,4 @@
-# flutter-whip
+# Customized flutter-whip
 
 Customized WebRTC-HTTP ingestion protocol (WHIP) library for flutter.
 
