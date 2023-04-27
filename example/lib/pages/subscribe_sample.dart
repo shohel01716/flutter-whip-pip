@@ -179,7 +179,7 @@ class _WhipSubscribeSampleState extends State<WhipSubscribeSample> {
                 child: Container(
                   margin: EdgeInsets.fromLTRB(0.0, 0.0, 0.0, 0.0),
                   width: MediaQuery.of(context).size.width,
-                  height: MediaQuery.of(context).size.height - 110,
+                  height: MediaQuery.of(context).size.height * 0.85,
                   decoration: BoxDecoration(color: Colors.black54),
                   child: RTCVideoView(_remoteRenderer,
                       mirror: false,
@@ -193,6 +193,7 @@ class _WhipSubscribeSampleState extends State<WhipSubscribeSample> {
       floatingActionButton: FloatingActionButton(
         onPressed: _connecting ? _disconnect : _connect,
         tooltip: _connecting ? 'Hangup' : 'Call',
+        mini: true,
         child: Icon(_connecting ? Icons.stop : Icons.play_arrow_sharp),
       ),
     );
