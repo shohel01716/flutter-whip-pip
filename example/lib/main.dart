@@ -60,13 +60,14 @@ class _MyAppState extends State<MyApp> {
   void _initItems() {
     items = <RouteItem>[
       RouteItem(
-          title: 'Publish Sample',
-          push: (BuildContext context) {
-            Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (BuildContext context) => WhipPublishSample()));
-          }),
+        title: 'Publish Sample',
+        push: (BuildContext context) {
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (BuildContext context) => WhipPublishSample()));
+        },
+      ),
       RouteItem(
           title: 'Subscribe Sample',
           push: (BuildContext context) {

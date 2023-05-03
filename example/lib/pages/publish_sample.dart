@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:flutter_whip/flutter_whip.dart';
+import 'package:flutter_whip_example_app/services/webrtc_native.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:simple_pip_mode/simple_pip.dart';
 
@@ -17,7 +18,8 @@ class WhipPublishSample extends StatefulWidget {
   _WhipPublishSampleState createState() => _WhipPublishSampleState();
 }
 
-class _WhipPublishSampleState extends State<WhipPublishSample> with WidgetsBindingObserver{
+class _WhipPublishSampleState extends State<WhipPublishSample>
+    with WidgetsBindingObserver {
   MediaStream? _localStream;
   final _localRenderer = RTCVideoRenderer();
   String stateStr = 'init';
@@ -31,7 +33,9 @@ class _WhipPublishSampleState extends State<WhipPublishSample> with WidgetsBindi
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    SimplePip().setAutoPipMode();
+    if (Platform.isAndroid) {
+      SimplePip().setAutoPipMode();
+    }
     initRenderers();
     _loadSettings();
   }
@@ -83,7 +87,13 @@ class _WhipPublishSampleState extends State<WhipPublishSample> with WidgetsBindi
             stateStr = 'Connecting';
             break;
           case WhipState.kConnected:
-            SimplePip().setAutoPipMode();
+            // Turn on pip mode
+            if (Platform.isAndroid) {
+              SimplePip().setAutoPipMode();
+            } else if (Platform.isIOS) {
+              _createPiP();
+            }
+
             stateStr = 'Connected';
             break;
           case WhipState.kDisconnected:
@@ -130,6 +140,7 @@ class _WhipPublishSampleState extends State<WhipPublishSample> with WidgetsBindi
 
   void _disconnect() async {
     try {
+      _disposePiP();
       if (kIsWeb) {
         _localStream?.getTracks().forEach((track) => track.stop());
       }
@@ -152,8 +163,20 @@ class _WhipPublishSampleState extends State<WhipPublishSample> with WidgetsBindi
     await Helper.switchCamera(videoTrack);
   }
 
-  bool visibleOption = true;
+  void _createPiP() {
+    if (_localStream == null || _whip.pc == null) return;
 
+    WebRTCNative().createPipVideoCall(
+      remoteStreamId: _localStream!.id,
+      peerConnectionId: _whip.pc!.peerConnectionId,
+    );
+  }
+
+  void _disposePiP() {
+    WebRTCNative().disposePiP();
+  }
+
+  bool visibleOption = true;
 
   @override
   void dispose() {
@@ -170,17 +193,19 @@ class _WhipPublishSampleState extends State<WhipPublishSample> with WidgetsBindi
     // These are the callbacks
     switch (state) {
       case AppLifecycleState.resumed:
-      // widget is resumed
+        // widget is resumed
         break;
       case AppLifecycleState.inactive:
-      // widget is inactive
+        // widget is inactive
         break;
       case AppLifecycleState.paused:
-        SimplePip().setAutoPipMode();
-      // widget is paused
+        if (Platform.isAndroid) {
+          SimplePip().setAutoPipMode();
+        }
+        // widget is paused
         break;
       case AppLifecycleState.detached:
-      // widget is detached
+        // widget is detached
         break;
     }
   }
@@ -218,7 +243,7 @@ class _WhipPublishSampleState extends State<WhipPublishSample> with WidgetsBindi
                             padding: EdgeInsets.zero,
                             onPressed: () {
                               //exitScreen();
-                              if(_connecting){
+                              if (_connecting) {
                                 _disconnect();
                               }
                               Navigator.pop(context);
@@ -257,15 +282,16 @@ class _WhipPublishSampleState extends State<WhipPublishSample> with WidgetsBindi
                                       padding: EdgeInsets.zero,
                                       onPressed: () {
                                         SimplePip(onPipEntered: () {
-
                                           setState(() {
                                             visibleOption = false;
-                                            debugPrint("SimplePip:: onPipEntered");
+                                            debugPrint(
+                                                "SimplePip:: onPipEntered");
                                           });
                                         }, onPipExited: () {
                                           setState(() {
                                             visibleOption = true;
-                                            debugPrint("SimplePip:: onPipExited");
+                                            debugPrint(
+                                                "SimplePip:: onPipExited");
                                           });
                                         }).enterPipMode(
                                             aspectRatio: [16, 9],
